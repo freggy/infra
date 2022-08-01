@@ -1,0 +1,8 @@
+---
+roles:
+  # Roles from galaxy
+  - name: geerlingguy.containerd
+    version: 1.1.1
+collections:
+  - name: ansible.posix
+    version: 1.2.0
