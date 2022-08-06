@@ -2,7 +2,7 @@ FROM ubuntu:22.04
 WORKDIR /build
 COPY . .
 RUN apt update \
-    && apt-get install -y wget python3 python3-pip gnupg software-properties-common \
+    && apt-get install -y wget python3 python3-pip gnupg software-properties-common openssh-client vim \
     && pip install ansible \
     && wget -O- https://apt.releases.hashicorp.com/gpg | \
        gpg --dearmor | \
