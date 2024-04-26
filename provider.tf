@@ -5,13 +5,6 @@ terraform {
       version = "1.35.1"
     }
   }
-
-  backend "remote" {
-    organization = "freggy"
-    workspaces {
-      name = "infra"
-    }
-  }
 }
 
 variable "hcloud_token" {}
