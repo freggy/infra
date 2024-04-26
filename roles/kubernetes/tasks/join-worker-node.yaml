@@ -1,4 +1,0 @@
----
-- name: join workers
-  shell: |
-    {{ kube_join_command }} --certificate-key {{ kube_cert_key }}
