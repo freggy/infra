@@ -1,3 +1,7 @@
+/*
+ * dedicated server properties
+ */
+
 variable "is_dedi_server" {
   type = bool
   default = false
@@ -7,6 +11,10 @@ variable "addr" {
   type = string
   default = ""
 }
+
+/*
+ * hetzner cloud server properties
+ */
 
 variable "is_hcloud_server" {
   type = bool

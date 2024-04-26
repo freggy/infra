@@ -16,7 +16,7 @@ variable "cloud_control_plane_pools" {
     location                   = string
     labels                     = list(string)
     taints                     = list(string)
-    ssh_keys                   = list(string)
+    initial_ssh_keys           = list(string)
     count                      = number
   }))
   default = []
@@ -30,7 +30,7 @@ variable "cloud_worker_pools" {
     location                   = string
     labels                     = list(string)
     taints                     = list(string)
-    ssh_keys                   = list(string)
+    initial_ssh_keys           = list(string)
     count                      = number
   }))
   default = []

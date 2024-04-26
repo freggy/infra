@@ -7,7 +7,7 @@ locals {
                 server_type : obj.server_type,
                 name : obj.name,
                 location : obj.location,
-                ssh_keys : obj.ssh_keys,
+                initial_ssh_keys : obj.initial_ssh_keys,
             }
         }
     cloud_worker_servers = {
@@ -16,7 +16,7 @@ locals {
                 server_type : obj.server_type,
                 name : obj.name,
                 location : obj.location,
-                ssh_keys : obj.ssh_keys,
+                initial_ssh_keys : obj.initial_ssh_keys,
             }
         }
     dedi_cp = {

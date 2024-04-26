@@ -6,7 +6,7 @@ module "cloud_control_plane" {
     hcloud_server_type = each.value.server_type
     hcloud_name = each.value.name
     hcloud_location = each.value.location
-    hcloud_ssh_keys = each.value.ssh_keys
+    hcloud_ssh_keys = each.value.initial_ssh_keys
 }
 
 module "cloud_worker" {
@@ -17,7 +17,7 @@ module "cloud_worker" {
     hcloud_server_type = each.value.server_type
     hcloud_name = each.value.name
     hcloud_location = each.value.location
-    hcloud_ssh_keys = each.value.ssh_keys
+    hcloud_ssh_keys = each.value.initial_ssh_keys
 }
 
 module "dedi_worker" {
