@@ -1,6 +1,8 @@
 locals {
+    // need to convert our nodepools into maps
+    // so we can use them in for_each
     cloud_cp_servers = {
-        for idx, obj in var.cloud_control_plane_nodepools :
+        for idx, obj in var.cloud_control_plane_pools :
             format("%s", idx) => {
                 server_type : obj.server_type,
                 name : obj.name,
@@ -9,7 +11,7 @@ locals {
             }
         }
     cloud_worker_servers = {
-        for idx, obj in var.cloud_worker_nodepools :
+        for idx, obj in var.cloud_worker_pools :
             format("%s", idx) => {
                 server_type : obj.server_type,
                 name : obj.name,
@@ -18,7 +20,7 @@ locals {
             }
         }
     dedi_cp = {
-        for idx, obj in var.additional_control_plane_addrs :
+        for idx, obj in var.var.dedi_control_plane_pool :
             format("%s", idx) => {
                 addr : obj.addr,
                 name : obj.name,
@@ -27,7 +29,7 @@ locals {
             }
         }
     dedi_worker = {
-        for idx, obj in var.additional_worker_addrs :
+        for idx, obj in var.var.dedi_worker_pool :
             format("%s", idx) => {
                 addr : obj.addr,
                 name : obj.name,

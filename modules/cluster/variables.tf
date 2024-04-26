@@ -8,7 +8,7 @@ variable "ssh_private_key" {
   type = string
 }
 
-variable "cloud_control_plane_nodepools" {
+variable "cloud_control_plane_pools" {
   description = "configuration of cloud control plane node pools"
   type = list(object({
     name                       = string
@@ -22,7 +22,7 @@ variable "cloud_control_plane_nodepools" {
   default = []
 }
 
-variable "cloud_worker_nodepools" {
+variable "cloud_worker_pools" {
   description = "configuration of cloud worker node pools"
   type = list(object({
     name                       = string
@@ -38,8 +38,8 @@ variable "cloud_worker_nodepools" {
 
 // those are to support dedicated servers, from hetzner server auction for example
 
-variable "additional_control_plane_addrs" {
-  description = "list of additional control plane addresses"
+variable "dedi_control_plane_pool" {
+  description = "list of additional control plane nodes"
   type = list(object({
     addr   = string
     labels = list(string)
@@ -48,8 +48,8 @@ variable "additional_control_plane_addrs" {
   default = []  
 }
 
-variable "additional_worker_addrs" {
-  description = "list of additional worker addresses"
+variable "dedi_worker_pool" {
+  description = "list of additional worker nodes"
   type = list(object({
     addr   = string
     labels = list(string)
