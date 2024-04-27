@@ -32,8 +32,13 @@ variable "hcloud_name" {
 }
 
 variable "hcloud_location" {
-  type = string // maybe enum???
+  type = string
   default = "fsn1"
+}
+
+variable "hcloud_image" {
+  type = string
+  default = "ubuntu-22.04"
 }
 
 variable "hcloud_ssh_keys" {
