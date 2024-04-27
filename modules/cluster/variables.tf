@@ -41,6 +41,7 @@ variable "cloud_worker_pools" {
 variable "dedi_control_plane_pool" {
   description = "list of additional control plane nodes"
   type = list(object({
+    name = string
     ipv4_address   = string
     labels = list(string)
     taints = list(string)
@@ -51,6 +52,7 @@ variable "dedi_control_plane_pool" {
 variable "dedi_worker_pool" {
   description = "list of additional worker nodes"
   type = list(object({
+    name = string
     ipv4_address   = string
     labels = list(string)
     taints = list(string)
