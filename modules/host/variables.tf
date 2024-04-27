@@ -7,7 +7,7 @@ variable "is_dedi_server" {
   default = false
 }
 
-variable "addr" {
+variable "ipv4_address" {
   type = string
   default = ""
 }

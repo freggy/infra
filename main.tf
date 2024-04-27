@@ -2,14 +2,15 @@ module "cluster01" {
     source = "./modules/cluster"
 
     kubernetes_version = "v1.30"
-    cloud_control_plane_nodepools = [ 
+    ssh_private_key = ""
+    cloud_control_plane_pools = [ 
         {
             name                       = "string"
             server_type                = "string"
             location                   = "string"
             labels                     = []
             taints                     = []
-            ssh_keys = []
+            initial_ssh_keys = []
             count                      = 1
         }
      ]

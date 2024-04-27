@@ -6,7 +6,7 @@ module "cloud_control_plane" {
     hcloud_server_type = each.value.server_type
     hcloud_name = each.value.name
     hcloud_location = each.value.location
-    hcloud_ssh_keys = each.value.ssh_keys
+    hcloud_ssh_keys = each.value.initial_ssh_keys
 }
 
 module "dedi_control_plane" {
@@ -14,7 +14,7 @@ module "dedi_control_plane" {
     for_each = local.dedi_cp
 
     is_dedi_server = true
-    addr = each.value.addr
+    ipv4_address = each.value.ipv4_address
 }
 
 resource "null_resource" "first_control_plane_node" {
@@ -27,6 +27,7 @@ resource "null_resource" "first_control_plane_node" {
 }
 
 resource "null_resource" "other_control_plane_nodes" {
+  for_each = local.control_plane_nodes
   connection {
     user           = "root"
     private_key    = var.ssh_private_key
@@ -34,3 +35,5 @@ resource "null_resource" "other_control_plane_nodes" {
   }
   // TODO: provision other nodes
 }
+
+// TODO: merge these together and begin provisioning
