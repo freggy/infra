@@ -17,4 +17,12 @@ module "dedi_worker" {
     ipv4_address = each.value.ipv4_address
 }
 
+terraform {
+  required_providers {
+    hcloud = {
+      source  = "hetznercloud/hcloud"
+      version = ">= 1.43.0"
+    }
+  }
+}
 // TODO: merge these together and begin provisioning
