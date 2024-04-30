@@ -1,27 +1,8 @@
-module "cloud_control_plane" {
-    source = "../host"
-    for_each = local.cloud_cp_map
-
-    is_hcloud_server = true
-    hcloud_server_type = each.value.server_type
-    hcloud_name = each.value.name
-    hcloud_location = each.value.location
-    hcloud_ssh_keys = each.value.initial_ssh_keys
-}
-
-module "dedi_control_plane" {
-    source = "../host"
-    for_each = local.dedi_cp_map
-
-    is_dedi_server = true
-    ipv4_address = each.value.ipv4_address
-}
-
 locals {
   // need to convert our nodepools into maps
   // so we can use them in for_each
   cloud_cp_map = tomap({
-    for obj in var.cloud_control_plane_pools: obj.name => obj
+    for obj in var.cloud_control_plane_nodes: obj.name => obj
   })
   dedi_cp_map = tomap({
     for obj in var.dedi_control_plane_pool: obj.name => obj
@@ -29,6 +10,58 @@ locals {
   control_plane = merge(module.cloud_control_plane, module.dedi_control_plane)
   first_cp_node = local.control_plane[keys(local.control_plane)[0]]
 }
+
+/*
+ * actual resources
+ */ 
+
+module "cloud_control_plane" {
+    source = "../host"
+    for_each = local.cloud_cp_map
+
+    is_hcloud_server = true
+    name = each.value.name
+    hcloud_server_type = each.value.server_type
+    hcloud_location = each.value.location
+    hcloud_image = each.value.image
+    hcloud_ssh_keys = each.value.initial_ssh_keys
+    hcloud_labels = {
+      cluster = var.cluster_name
+      node-type = "control-plane"
+    }
+}
+
+module "dedi_control_plane" {
+    source   = "../host"
+    for_each = local.dedi_cp_map
+    
+    is_dedi_server = true
+    name = each.value.name
+    ipv4_address   = each.value.ipv4_address
+}
+
+resource "hcloud_load_balancer" "load_balancer" {
+  name               = "${var.cluster_name}-lb"
+  load_balancer_type = var.load_balancer.type
+  location           = var.load_balancer.location
+}
+
+resource "hcloud_load_balancer_service" "control_plane" {
+  load_balancer_id = hcloud_load_balancer.load_balancer.id
+  protocol         = "tcp"
+  listen_port      = 6443
+  destination_port = 6443
+}
+
+resource "hcloud_load_balancer_target" "cloud_control_plane" {
+  load_balancer_id = hcloud_load_balancer.load_balancer.id
+  type             = "label_selector"
+  label_selector   = "cluster=${var.cluster_name},node-type=control-plane"
+}
+
+/*
+ * provisioning logic
+ */
 
 resource "null_resource" "install_packages" {
   for_each = local.control_plane
@@ -38,36 +71,48 @@ resource "null_resource" "install_packages" {
   connection {
     user           = "root"
     private_key    = var.ssh_private_key
-    host           = local.control_plane[each.key].ipv4_address
+    host           = each.value.ipv4_address
   }
   provisioner "file" {
-    source      = "scripts/install-packages.sh"
+    source      = "modules/cluster/scripts/prepare-node.sh"
     destination = "/root/install-packages.sh"
   }
   provisioner "remote-exec" {
     inline = [
-      "MAJOR_VERSION=${local.version_major}",
-      "FULL_VERSION=${var.kubernetes_version}",
+      "export MAJOR_VERSION=${local.version_major}",
+      "export FULL_VERSION=${var.kubernetes_version}",
+      "chmod +x /root/install-packages.sh",
       "/root/install-packages.sh"
       ]
   }
 }
 
-/*
 resource "null_resource" "first_control_plane_node" {
   depends_on = [
     // we have to wait until all cloud control planes
     // are ready. dedi control plane servers will 
     // already be ready for provisioning.
-    null_resource.add_package_registries
+    null_resource.install_packages,
+    hcloud_load_balancer.load_balancer
   ]
   connection {
     user           = "root"
     private_key    = var.ssh_private_key
     host           = local.first_cp_node.ipv4_address
   }
-  provisioner "local-exec" {
-    command = "echo ${local.first_cp_node.ipv4_address}"
+  provisioner "file" {
+    content     = "${local.cluster_config}"
+    destination = "/root/cluster_config.yaml"
+  }
+  provisioner "file" {
+    source      = "modules/cluster/scripts/init-control-plane.sh"
+    destination = "/root/init-control-plane.sh"
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /root/init-control-plane.sh",
+      "/root/init-control-plane.sh"
+    ]
   }
 }
 
@@ -76,10 +121,18 @@ resource "null_resource" "other_control_plane_nodes" {
   connection {
     user           = "root"
     private_key    = var.ssh_private_key
-    host           = local.control_plane[each.key].ipv4_address
+    host           = each.value.ipv4_address
   }
-  provisioner "local-exec" {
-    command = "echo ${local.control_plane[each.key].ipv4_address}"
+  provisioner "file" {
+    source      = "modules/cluster/scripts/join-other-control-planes.sh"
+    destination = "/root/join-other-control-planes.sh"
   }
-  // TODO: provision other nodes
-}*/
+  provisioner "remote-exec" {
+    inline = [
+      "export JOIN_CMD='${data.external.join_cmd.result.cmd}'",
+      "export CERT_KEY=${random_bytes.certkey.hex}",
+      "chmod +x /root/join-other-control-planes.sh",
+      "/root/join-other-control-planes.sh"
+    ]
+  }
+}
