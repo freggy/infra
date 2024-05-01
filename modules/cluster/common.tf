@@ -16,11 +16,27 @@ apiServer:
   extraArgs:
     "authorization-mode": "Node,RBAC"
     EOT
+  
+  // example version string: 1.29.4-150500.2.1
+  // [0] [1]    [2]   [3] [4]
+  //  1  29  4-150500  2   1 
+  version_array = split(".", var.kubernetes_version)
+  
+  // 1.29
+  version_major = join(".", slice(local.version_array, 0, 2))
+
+  // first we do:
+  //    join(".", slice(local.version_array, 0, 2))
+  // this will give us 
+  //    1.29.4-150500
+  // then split this by `-` and get the first entry:
+  //    1.29.4
+  version_minor = split("-", join(".", slice(local.version_array, 0, 3)))[0]
 }
 
 data "external" "join_cmd" {
   depends_on = [ 
-    null_resource.first_control_plane_node
+    null_resource.first_cp_node
   ]
   program = ["${path.module}/scripts/join-cmd.sh"]
   query = {
@@ -33,10 +49,10 @@ resource "random_bytes" "certkey" {
 }
 
 resource "null_resource" "install_packages" {
-  for_each = merge(local.control_plane, local.workers)
+  for_each = merge(local.cp, local.workers)
   depends_on = [
     module.cloud_worker,
-    module.cloud_control_plane
+    module.cloud_cp
   ]
   connection {
     user           = "root"
@@ -54,5 +70,14 @@ resource "null_resource" "install_packages" {
       "chmod +x /root/install-packages.sh",
       "/root/install-packages.sh"
       ]
+  }
+}
+
+terraform {
+  required_providers {
+    hcloud = {
+      source  = "hetznercloud/hcloud"
+      version = ">= 1.43.0"
+    }
   }
 }
