@@ -25,7 +25,7 @@ variable "load_balancer" {
   }
 }
 
-variable "cloud_control_plane_nodes" {
+variable "cloud_cp_nodes" {
   description = "configuration of cloud control plane node pools"
   type = list(object({
     name             = string
@@ -39,7 +39,7 @@ variable "cloud_control_plane_nodes" {
 
 // those are to support dedicated servers, from hetzner server auction for example
 
-variable "dedi_control_plane_pool" {
+variable "dedi_cp_nodes" {
   description = "list of additional control plane nodes"
   type = list(object({
     name         = string
@@ -50,7 +50,7 @@ variable "dedi_control_plane_pool" {
   default = []  
 }
 
-variable "cloud_workers" {
+variable "cloud_worker_nodes" {
   description = "configuration of cloud worker node pools"
   type = list(object({
     name             = string
@@ -62,7 +62,7 @@ variable "cloud_workers" {
   default = []
 }
 
-variable "dedi_workers" {
+variable "dedi_worker_nodes" {
   description = "list of additional worker nodes"
   type = list(object({
     name         = string

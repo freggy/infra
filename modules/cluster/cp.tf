@@ -1,21 +1,21 @@
 locals {
-  // need to convert our nodepools into maps
+  // need to convert our node templates into maps
   // so we can use them in for_each
   cloud_cp_map = tomap({
-    for obj in var.cloud_control_plane_nodes: obj.name => obj
+    for obj in var.cloud_cp_nodes: obj.name => obj
   })
   dedi_cp_map = tomap({
-    for obj in var.dedi_control_plane_pool: obj.name => obj
+    for obj in var.dedi_cp_nodes: obj.name => obj
   })
-  control_plane = merge(module.cloud_control_plane, module.dedi_control_plane)
-  first_cp_node = local.control_plane[keys(local.control_plane)[0]]
+  cp = merge(module.cloud_cp, module.dedi_cp)
+  first_cp_node = local.cp[keys(local.cp)[0]]
 }
 
 /*
  * actual resources
  */ 
 
-module "cloud_control_plane" {
+module "cloud_cp" {
     source = "../host"
     for_each = local.cloud_cp_map
 
@@ -31,7 +31,7 @@ module "cloud_control_plane" {
     }
 }
 
-module "dedi_control_plane" {
+module "dedi_cp" {
     source   = "../host"
     for_each = local.dedi_cp_map
     
@@ -46,14 +46,14 @@ resource "hcloud_load_balancer" "load_balancer" {
   location           = var.load_balancer.location
 }
 
-resource "hcloud_load_balancer_service" "control_plane" {
+resource "hcloud_load_balancer_service" "cp" {
   load_balancer_id = hcloud_load_balancer.load_balancer.id
   protocol         = "tcp"
   listen_port      = 6443
   destination_port = 6443
 }
 
-resource "hcloud_load_balancer_target" "cloud_control_plane" {
+resource "hcloud_load_balancer_target" "cloud_cp" {
   load_balancer_id = hcloud_load_balancer.load_balancer.id
   type             = "label_selector"
   label_selector   = "cluster=${var.cluster_name},node-type=control-plane"
@@ -63,7 +63,7 @@ resource "hcloud_load_balancer_target" "cloud_control_plane" {
  * provisioning logic
  */
 
-resource "null_resource" "first_control_plane_node" {
+resource "null_resource" "first_cp_node" {
   depends_on = [
     // we have to wait until all cloud control planes
     // are ready. dedi control plane servers will 
@@ -92,8 +92,8 @@ resource "null_resource" "first_control_plane_node" {
   }
 }
 
-resource "null_resource" "other_control_plane_nodes" {
-  for_each = local.control_plane
+resource "null_resource" "other_cp_nodes" {
+  for_each = local.cp
   connection {
     user           = "root"
     private_key    = var.ssh_private_key
