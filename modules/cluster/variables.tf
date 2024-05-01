@@ -10,6 +10,10 @@ variable "cluster_name" {
   type = string
 }
 
+variable "cilium_version" {
+  type = string
+}
+
 variable "load_balancer" {
   type = object({
     location = string
