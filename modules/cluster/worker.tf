@@ -49,15 +49,15 @@ resource "null_resource" "join_workers" {
     host           = each.value.ipv4_address
   }
   provisioner "file" {
-    source      = "modules/cluster/scripts/join-workers.sh"
-    destination = "/root/join-workers.sh"
+    source      = "modules/cluster/scripts/join-node.sh"
+    destination = "/root/join-node.sh"
   }
   provisioner "remote-exec" {
     inline = [
       "export JOIN_CMD='${data.external.join_cmd.result.cmd}'",
       "export CERT_KEY=${random_bytes.certkey.hex}",
-      "chmod +x /root/join-workers.sh",
-      "/root/join-workers.sh"
+      "chmod +x /root/join-node.sh",
+      "/root/join-node.sh"
     ]
   }
 }

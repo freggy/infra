@@ -100,15 +100,16 @@ resource "null_resource" "other_control_plane_nodes" {
     host           = each.value.ipv4_address
   }
   provisioner "file" {
-    source      = "modules/cluster/scripts/join-other-cp-nodes.sh"
-    destination = "/root/join-other-cp-nodes.sh"
+    source      = "modules/cluster/scripts/join-node.sh"
+    destination = "/root/join-node.sh"
   }
   provisioner "remote-exec" {
     inline = [
       "export JOIN_CMD='${data.external.join_cmd.result.cmd}'",
       "export CERT_KEY=${random_bytes.certkey.hex}",
-      "chmod +x /root/join-other-cp-nodes.sh",
-      "/root/join-other-cp-nodes.sh"
+      "export IS_CP=true",
+      "chmod +x /root/join-node.sh",
+      "/root/join-node.sh"
     ]
   }
 }
