@@ -31,3 +31,28 @@ data "external" "join_cmd" {
 resource "random_bytes" "certkey" {
   length = 32 // 32 bits because, otherwise kubeadm complains
 }
+
+resource "null_resource" "install_packages" {
+  for_each = merge(local.control_plane, local.workers)
+  depends_on = [
+    module.cloud_worker,
+    module.cloud_control_plane
+  ]
+  connection {
+    user           = "root"
+    private_key    = var.ssh_private_key
+    host           = each.value.ipv4_address
+  }
+  provisioner "file" {
+    source      = "modules/cluster/scripts/prepare-node.sh"
+    destination = "/root/install-packages.sh"
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "export MAJOR_VERSION=${local.version_major}",
+      "export FULL_VERSION=${var.kubernetes_version}",
+      "chmod +x /root/install-packages.sh",
+      "/root/install-packages.sh"
+      ]
+  }
+}

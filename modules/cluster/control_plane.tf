@@ -63,30 +63,6 @@ resource "hcloud_load_balancer_target" "cloud_control_plane" {
  * provisioning logic
  */
 
-resource "null_resource" "install_packages" {
-  for_each = local.control_plane
-  depends_on = [ 
-    module.cloud_control_plane
-  ]
-  connection {
-    user           = "root"
-    private_key    = var.ssh_private_key
-    host           = each.value.ipv4_address
-  }
-  provisioner "file" {
-    source      = "modules/cluster/scripts/prepare-node.sh"
-    destination = "/root/install-packages.sh"
-  }
-  provisioner "remote-exec" {
-    inline = [
-      "export MAJOR_VERSION=${local.version_major}",
-      "export FULL_VERSION=${var.kubernetes_version}",
-      "chmod +x /root/install-packages.sh",
-      "/root/install-packages.sh"
-      ]
-  }
-}
-
 resource "null_resource" "first_control_plane_node" {
   depends_on = [
     // we have to wait until all cloud control planes
@@ -105,13 +81,13 @@ resource "null_resource" "first_control_plane_node" {
     destination = "/root/cluster_config.yaml"
   }
   provisioner "file" {
-    source      = "modules/cluster/scripts/init-control-plane.sh"
-    destination = "/root/init-control-plane.sh"
+    source      = "modules/cluster/scripts/init-cp-node.sh"
+    destination = "/root/init-cp-node.sh"
   }
   provisioner "remote-exec" {
     inline = [
-      "chmod +x /root/init-control-plane.sh",
-      "/root/init-control-plane.sh"
+      "chmod +x /root/init-cp-node.sh",
+      "/root/init-cp-node.sh"
     ]
   }
 }
@@ -124,15 +100,15 @@ resource "null_resource" "other_control_plane_nodes" {
     host           = each.value.ipv4_address
   }
   provisioner "file" {
-    source      = "modules/cluster/scripts/join-other-control-planes.sh"
-    destination = "/root/join-other-control-planes.sh"
+    source      = "modules/cluster/scripts/join-other-cp-nodes.sh"
+    destination = "/root/join-other-cp-nodes.sh"
   }
   provisioner "remote-exec" {
     inline = [
       "export JOIN_CMD='${data.external.join_cmd.result.cmd}'",
       "export CERT_KEY=${random_bytes.certkey.hex}",
-      "chmod +x /root/join-other-control-planes.sh",
-      "/root/join-other-control-planes.sh"
+      "chmod +x /root/join-other-cp-nodes.sh",
+      "/root/join-other-cp-nodes.sh"
     ]
   }
 }

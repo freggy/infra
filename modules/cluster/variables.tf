@@ -28,22 +28,6 @@ variable "cloud_control_plane_nodes" {
     server_type      = string
     location         = string
     image            = string
-    labels           = list(string)
-    taints           = list(string)
-    initial_ssh_keys = list(string)
-  }))
-  default = []
-}
-
-variable "cloud_worker_pools" {
-  description = "configuration of cloud worker node pools"
-  type = list(object({
-    name             = string
-    server_type      = string
-    location         = string
-    image            = string
-    labels           = list(string)
-    taints           = list(string)
     initial_ssh_keys = list(string)
   }))
   default = []
@@ -62,7 +46,19 @@ variable "dedi_control_plane_pool" {
   default = []  
 }
 
-variable "dedi_worker_pool" {
+variable "cloud_workers" {
+  description = "configuration of cloud worker node pools"
+  type = list(object({
+    name             = string
+    server_type      = string
+    location         = string
+    image            = string
+    initial_ssh_keys = list(string)
+  }))
+  default = []
+}
+
+variable "dedi_workers" {
   description = "list of additional worker nodes"
   type = list(object({
     name         = string
