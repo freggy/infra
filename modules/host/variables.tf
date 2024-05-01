@@ -7,12 +7,12 @@ variable "name" {
  */
 
 variable "is_dedi_server" {
-  type = bool
+  type    = bool
   default = false
 }
 
 variable "ipv4_address" {
-  type = string
+  type    = string
   default = ""
 }
 
@@ -21,31 +21,31 @@ variable "ipv4_address" {
  */
 
 variable "is_hcloud_server" {
-  type = bool
+  type    = bool
   default = false
 }
 
 variable "hcloud_server_type" {
-  type = string
+  type    = string
   default = ""
 }
 
 variable "hcloud_location" {
-  type = string
+  type    = string
   default = "fsn1"
 }
 
 variable "hcloud_image" {
-  type = any
+  type    = any
   default = "ubuntu-22.04"
 }
 
 variable "hcloud_ssh_keys" {
-  type = list(string)
+  type    = list(string)
   default = []
 }
 
 variable "hcloud_labels" {
-  type = map(string)
+  type    = map(string)
   default = {}
 }

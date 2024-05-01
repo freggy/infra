@@ -2,42 +2,42 @@ locals {
   // need to convert our node templates into maps
   // so we can use them in for_each
   cloud_cp_map = tomap({
-    for obj in var.cloud_cp_nodes: obj.name => obj
+    for obj in var.cloud_cp_nodes : obj.name => obj
   })
   dedi_cp_map = tomap({
-    for obj in var.dedi_cp_nodes: obj.name => obj
+    for obj in var.dedi_cp_nodes : obj.name => obj
   })
-  cp = merge(module.cloud_cp, module.dedi_cp)
+  cp            = merge(module.cloud_cp, module.dedi_cp)
   first_cp_node = local.cp[keys(local.cp)[0]]
 }
 
 /*
  * actual resources
- */ 
+ */
 
 module "cloud_cp" {
-    source = "../host"
-    for_each = local.cloud_cp_map
+  source   = "../host"
+  for_each = local.cloud_cp_map
 
-    is_hcloud_server = true
-    name = each.value.name
-    hcloud_server_type = each.value.server_type
-    hcloud_location = each.value.location
-    hcloud_image = each.value.image
-    hcloud_ssh_keys = each.value.initial_ssh_keys
-    hcloud_labels = {
-      cluster = var.cluster_name
-      node-type = "control-plane"
-    }
+  is_hcloud_server   = true
+  name               = each.value.name
+  hcloud_server_type = each.value.server_type
+  hcloud_location    = each.value.location
+  hcloud_image       = each.value.image
+  hcloud_ssh_keys    = each.value.initial_ssh_keys
+  hcloud_labels = {
+    cluster   = var.cluster_name
+    node-type = "control-plane"
+  }
 }
 
 module "dedi_cp" {
-    source   = "../host"
-    for_each = local.dedi_cp_map
-    
-    is_dedi_server = true
-    name = each.value.name
-    ipv4_address   = each.value.ipv4_address
+  source   = "../host"
+  for_each = local.dedi_cp_map
+
+  is_dedi_server = true
+  name           = each.value.name
+  ipv4_address   = each.value.ipv4_address
 }
 
 resource "hcloud_load_balancer" "load_balancer" {
@@ -72,12 +72,12 @@ resource "null_resource" "first_cp_node" {
     hcloud_load_balancer.load_balancer
   ]
   connection {
-    user           = "root"
-    private_key    = var.ssh_private_key
-    host           = local.first_cp_node.ipv4_address
+    user        = "root"
+    private_key = var.ssh_private_key
+    host        = local.first_cp_node.ipv4_address
   }
   provisioner "file" {
-    content     = "${local.cluster_config}"
+    content     = local.cluster_config
     destination = "/root/cluster_config.yaml"
   }
   provisioner "file" {
@@ -95,9 +95,9 @@ resource "null_resource" "first_cp_node" {
 resource "null_resource" "other_cp_nodes" {
   for_each = local.cp
   connection {
-    user           = "root"
-    private_key    = var.ssh_private_key
-    host           = each.value.ipv4_address
+    user        = "root"
+    private_key = var.ssh_private_key
+    host        = each.value.ipv4_address
   }
   provisioner "file" {
     source      = "modules/cluster/scripts/join-node.sh"

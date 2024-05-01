@@ -17,11 +17,11 @@ variable "cilium_version" {
 variable "load_balancer" {
   type = object({
     location = string
-    type = string
+    type     = string
   })
   default = {
     location = "fsn1"
-    type = "lb11"
+    type     = "lb11"
   }
 }
 
@@ -47,7 +47,7 @@ variable "dedi_cp_nodes" {
     labels       = list(string)
     taints       = list(string)
   }))
-  default = []  
+  default = []
 }
 
 variable "cloud_worker_nodes" {
@@ -70,5 +70,5 @@ variable "dedi_worker_nodes" {
     labels       = list(string)
     taints       = list(string)
   }))
-  default = [] 
+  default = []
 }

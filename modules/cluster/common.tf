@@ -1,5 +1,5 @@
 locals {
-    cluster_config = <<EOT
+  cluster_config = <<EOT
 ---
 apiVersion: kubeadm.k8s.io/v1beta3
 kind: InitConfiguration
@@ -16,12 +16,12 @@ apiServer:
   extraArgs:
     "authorization-mode": "Node,RBAC"
     EOT
-  
+
   // example version string: 1.29.4-150500.2.1
   // [0] [1]    [2]   [3] [4]
   //  1  29  4-150500  2   1 
   version_array = split(".", var.kubernetes_version)
-  
+
   // 1.29
   version_major = join(".", slice(local.version_array, 0, 2))
 
@@ -35,7 +35,7 @@ apiServer:
 }
 
 data "external" "join_cmd" {
-  depends_on = [ 
+  depends_on = [
     null_resource.first_cp_node
   ]
   program = ["${path.module}/scripts/join-cmd.sh"]
@@ -55,9 +55,9 @@ resource "null_resource" "install_packages" {
     module.cloud_cp
   ]
   connection {
-    user           = "root"
-    private_key    = var.ssh_private_key
-    host           = each.value.ipv4_address
+    user        = "root"
+    private_key = var.ssh_private_key
+    host        = each.value.ipv4_address
   }
   provisioner "file" {
     source      = "modules/cluster/scripts/prepare-node.sh"
@@ -69,7 +69,7 @@ resource "null_resource" "install_packages" {
       "export FULL_VERSION=${var.kubernetes_version}",
       "chmod +x /root/install-packages.sh",
       "/root/install-packages.sh"
-      ]
+    ]
   }
 }
 
