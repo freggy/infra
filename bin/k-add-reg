@@ -1,0 +1,10 @@
+#!/bin/bash
+# generates a docker secret for the given registry.
+# $1 is the name of the secret
+# example: ./bin/k-add-reg spc-ghcr-read ghcr.io freggy <token>
+kubectl create secret docker-registry $1 \
+    --docker-server=$2 \
+    --docker-username=$3 \
+    --docker-password=$4 \
+    --dry-run=client \
+    -o yaml \
