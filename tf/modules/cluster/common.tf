@@ -11,7 +11,7 @@ apiVersion: kubeadm.k8s.io/v1beta3
 kind: ClusterConfiguration
 clusterName: ${var.cluster_name}
 kubernetesVersion: '${local.version_minor}'
-controlPlaneEndpoint: ${hcloud_load_balancer.load_balancer.ipv4}:6443
+controlPlaneEndpoint: ${hcloud_load_balancer.cp_lb.ipv4}:6443
 apiServer:
   extraArgs:
     "authorization-mode": "Node,RBAC"

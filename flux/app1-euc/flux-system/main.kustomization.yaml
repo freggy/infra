@@ -1,0 +1,17 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: main
+  namespace: flux-system
+spec:
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-cluster-key
+  interval: 5m0s
+  path: ./flux/app1-euc
+  prune: true
+  sourceRef:
+    kind: OCIRepository
+    name: infra-flux

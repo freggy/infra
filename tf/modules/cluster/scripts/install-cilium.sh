@@ -7,7 +7,7 @@ tar -C /usr/local/bin -xzvf cilium-linux-$ARCH.tar.gz
 rm cilium-linux-$ARCH.tar.gz{,.sha256sum}
 KUBECONFIG=/etc/kubernetes/admin.conf cilium install \
     --version $CILIUM_VERSION \
-    --set k8sServiceHost=95.217.174.130 \
+    --set k8sServiceHost=$CP_LB_IP \
     --set k8sServicePort=6443 \
     --set kubeProxyReplacement=true \
     --wait \
