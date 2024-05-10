@@ -1,6 +1,11 @@
 creation_rules:
-  - key_groups:
+    # encrypted_regex helps encrypt the data and stringData fields for Secrets.
+    # kustomize does not work with `apiVersion` and `kind` fields being encrypted.
+  - encrypted_regex: ^(data|stringData)$
+    key_groups:
       - age:
+          # flux cluster key
+          - age1ng398qsp5vfcwtptfcacf5l77wmvqqjkezmkyenz7zk85h2fk36sj2fdfa
           # wrk macos m2
           - age1csj946q0xtcwwf4d9nxg3zqyy9w5tynlzh20mp267mqhshyar97qw0fkre
           # pc muc win wsl2
