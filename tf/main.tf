@@ -3,25 +3,40 @@ module "cluster01" {
   providers = {
     hcloud = hcloud
   }
-  kubernetes_version = "v1.30"
-  ssh_private_key    = ""
-  cloud_control_plane_pools = [ 
+  kubernetes_version = "1.30.0-1.1"
+  cluster_name       = "dev1-euc"
+  ssh_private_key    = file("~/.ssh/id_ed25519")
+  cilium_version     = "1.15.4"
+  cloud_cp_nodes     = [
     {
-      name             = "cloud-cp-0"
-      server_type      = "cx11"
+      name             = "dev1-euc-cp1"
+      server_type      = "cax11"
+      image            = "debian-12"
       location         = "hel1"
-      labels           = []
-      taints           = []
-      initial_ssh_keys = []
-      count            = 1
-    }
-  ]
-  dedi_control_plane_pool = [
+      initial_ssh_keys = ["yannic"]
+    },
     {
-      name = "dedi-cp-0"
-      ipv4_address = "1.1.1.1"
-      labels       = []
-      taints       = []
-    } 
+      name             = "dev1-euc-cp2"
+      server_type      = "cax11"
+      image            = "debian-12"
+      location         = "hel1"
+      initial_ssh_keys = ["yannic"]
+    },
+  ]
+  cloud_worker_nodes = [
+    {
+      name             = "dev1-euc-w1"
+      server_type      = "cax21"
+      image            = "debian-12"
+      location         = "hel1"
+      initial_ssh_keys = ["yannic"]
+    },
+    {
+      name             = "dev1-euc-w2"
+      server_type      = "cax21"
+      image            = "debian-12"
+      location         = "hel1"
+      initial_ssh_keys = ["yannic"]
+    },
   ]
 }
