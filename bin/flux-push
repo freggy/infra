@@ -1,9 +1,9 @@
 #!/bin/bash
 # pushes tenant cluster flux artifact
-# names of
 # example: flux-push
 flux push artifact oci://ghcr.io/freggy/infra/flux \
-    --path=./$1/flux/$2 \
+    --path=./ \
     --source=git@github.com:freggy/infra.git \
+    --creds $GHCR_USER:$GHCR_TOKEN \
     --revision="$(git rev-parse HEAD)" \
     --output=json \
