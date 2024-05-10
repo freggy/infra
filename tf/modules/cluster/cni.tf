@@ -14,6 +14,7 @@ resource "null_resource" "install_cilium" {
   provisioner "remote-exec" {
     inline = [
       "export CILIUM_VERSION=${var.cilium_version}",
+      "export CP_LB_IP=${hcloud_load_balancer.cp_lb.ipv4}",
       "chmod +x /root/install-cilium.sh",
       "/root/install-cilium.sh"
     ]

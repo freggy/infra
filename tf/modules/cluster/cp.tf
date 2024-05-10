@@ -40,21 +40,21 @@ module "dedi_cp" {
   ipv4_address   = each.value.ipv4_address
 }
 
-resource "hcloud_load_balancer" "load_balancer" {
+resource "hcloud_load_balancer" "cp_lb" {
   name               = "${var.cluster_name}-lb"
   load_balancer_type = var.load_balancer.type
   location           = var.load_balancer.location
 }
 
 resource "hcloud_load_balancer_service" "cp" {
-  load_balancer_id = hcloud_load_balancer.load_balancer.id
+  load_balancer_id = hcloud_load_balancer.cp_lb.id
   protocol         = "tcp"
   listen_port      = 6443
   destination_port = 6443
 }
 
 resource "hcloud_load_balancer_target" "cloud_cp" {
-  load_balancer_id = hcloud_load_balancer.load_balancer.id
+  load_balancer_id = hcloud_load_balancer.cp_lb.id
   type             = "label_selector"
   label_selector   = "cluster=${var.cluster_name},node-type=control-plane"
 }
@@ -69,7 +69,7 @@ resource "null_resource" "first_cp_node" {
     // are ready. dedi control plane servers will 
     // already be ready for provisioning.
     null_resource.install_packages,
-    hcloud_load_balancer.load_balancer
+    hcloud_load_balancer.cp_lb
   ]
   connection {
     user        = "root"
