@@ -3,3 +3,5 @@ creation_rules:
       - age:
           # wrk macos m2
           - age1csj946q0xtcwwf4d9nxg3zqyy9w5tynlzh20mp267mqhshyar97qw0fkre
+          # pc muc win wsl2
+          - age10hdvlellfzyeefleuz252kaalnqvmuus8v6cy0l9m4cdreapnscsrv6py3
