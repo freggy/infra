@@ -27,3 +27,5 @@ all current regions:
 
 - scripts should always expect being executed in the root directory i.e `./bin/flux-push`.
 - flux artifacts should be pushed into `ghcr.io/freggy/infra/flux`
+- first step when bootstrapping a cluster is to decrypt and apply `sops-cluster.key.secret.sops.yaml` first then apply main kustomization
+- `.sops.yaml` needs to be present in `flux-push` image
