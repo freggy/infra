@@ -13,6 +13,10 @@ echo "deb [signed-by=/etc/apt/keyrings/cri-o-apt-keyring.gpg] https://pkgs.k8s.i
 apt-get update
 apt-get install -y cri-o kubelet kubeadm kubectl
 apt-mark hold cri-o kubelet kubeadm kubectl
+
+# needed so hcloud-csi-driver works
+apt-get install lsb-release ntp apparmor apparmor-utils
+
 systemctl start crio.service
 
 sysctl -w net.ipv4.ip_forward=1

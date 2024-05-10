@@ -1,0 +1,9 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: cloud-provider
+resources:
+- hcloud-csi.helmrelease.yaml
+- hcloud-token.secret.sops.yaml
+- hcloud.helmrepository.yaml
+- ns.yaml
