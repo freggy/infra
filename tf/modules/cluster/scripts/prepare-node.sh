@@ -15,7 +15,7 @@ apt-get install -y cri-o kubelet kubeadm kubectl
 apt-mark hold cri-o kubelet kubeadm kubectl
 
 # needed so hcloud-csi-driver works
-apt-get install lsb-release ntp apparmor apparmor-utils
+apt-get -y install lsb-release ntp apparmor apparmor-utils
 
 systemctl start crio.service
 
