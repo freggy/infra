@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
 - cloud-provider
 - flux-system
+- rook-ceph

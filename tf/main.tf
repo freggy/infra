@@ -42,5 +42,12 @@ module "app1_euc" {
       location         = "hel1"
       initial_ssh_keys = ["yannic"]
     },
+    {
+      name             = "app1-euc-w3"
+      server_type      = "cax21"
+      image            = "debian-12"
+      location         = "hel1"
+      initial_ssh_keys = ["yannic"]
+    },
   ]
 }
