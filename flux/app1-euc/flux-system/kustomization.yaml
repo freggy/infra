@@ -4,6 +4,5 @@ kind: Kustomization
 namespace: flux-system
 resources:
 - flux.components.yaml
-- ghcr-auth.secret.sops.yaml
 - infra-flux.ocirepository.yaml
 - main.kustomization.yaml
