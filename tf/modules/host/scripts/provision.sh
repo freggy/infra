@@ -22,6 +22,6 @@ systemctl start crio.service
 sysctl -w net.ipv4.ip_forward=1
 sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf # persist after reboot
 
-# this indicates that if the node is a control plane 
+# this indicates that if the node is a control plane
 # it has not been initialized
 echo '0' > /root/.joined

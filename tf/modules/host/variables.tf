@@ -2,6 +2,18 @@ variable "name" {
   type = string
 }
 
+variable "kubernetes_version" {
+  type = string
+}
+
+variable "kubernetes_major_version" {
+  type = string
+}
+
+variable "ssh_private_key" {
+  type = string
+}
+
 /*
  * dedicated server properties
  */

@@ -1,0 +1,19 @@
+---
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: JoinConfiguration
+discovery:
+  bootstrapToken:
+    token: ${bootstrap_token}
+    apiServerEndpoint: ${cp_endpoint}
+    unsafeSkipCAVerification: true
+nodeRegistration:
+  criSocket: unix:///var/run/crio/crio.sock
+  # ignore FileContent--proc-sys-net-bridge-bridge-nf-call-iptables
+  # because we are using ciliums kube-proxy replacement which does
+  # not use iptables
+  ignorePreflightErrors: [
+    "FileContent--proc-sys-net-bridge-bridge-nf-call-iptables"
+  ]
+  kubeletExtraArgs:
+    node-ip: ${node_ip}
+    address: ${node_ip}

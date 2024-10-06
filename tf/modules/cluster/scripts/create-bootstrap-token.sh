@@ -5,6 +5,6 @@ set -e
 # jq will ensure that the values are properly quoted
 # and escaped for consumption by the shell.
 eval "$(jq -r '@sh "IP=\(.ip)"')"
-CMD=$(ssh -o StrictHostKeyChecking=no root@$IP 'kubeadm token create --print-join-command')
+CMD=$(ssh -o StrictHostKeyChecking=no root@$IP 'kubeadm token create')
 
 jq -n --arg cmd "$CMD" '{"cmd":$cmd}'

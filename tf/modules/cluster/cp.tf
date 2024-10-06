@@ -19,12 +19,15 @@ module "cloud_cp" {
   source   = "../host"
   for_each = local.cloud_cp_map
 
-  is_hcloud_server   = true
-  name               = each.value.name
-  hcloud_server_type = each.value.server_type
-  hcloud_location    = each.value.location
-  hcloud_image       = each.value.image
-  hcloud_ssh_keys    = each.value.initial_ssh_keys
+  is_hcloud_server         = true
+  name                     = each.value.name
+  hcloud_server_type       = each.value.server_type
+  hcloud_location          = each.value.location
+  hcloud_image             = each.value.image
+  hcloud_ssh_keys          = each.value.initial_ssh_keys
+  kubernetes_version       = var.kubernetes_version
+  kubernetes_major_version = local.version_major
+  ssh_private_key          = var.ssh_private_key
   hcloud_labels = {
     cluster   = var.cluster_name
     node-type = "control-plane"
@@ -35,28 +38,12 @@ module "dedi_cp" {
   source   = "../host"
   for_each = local.dedi_cp_map
 
-  is_dedi_server = true
-  name           = each.value.name
-  ipv4_address   = each.value.ipv4_address
-}
-
-resource "hcloud_load_balancer" "cp_lb" {
-  name               = "${var.cluster_name}-lb"
-  load_balancer_type = var.load_balancer.type
-  location           = var.load_balancer.location
-}
-
-resource "hcloud_load_balancer_service" "cp" {
-  load_balancer_id = hcloud_load_balancer.cp_lb.id
-  protocol         = "tcp"
-  listen_port      = 6443
-  destination_port = 6443
-}
-
-resource "hcloud_load_balancer_target" "cloud_cp" {
-  load_balancer_id = hcloud_load_balancer.cp_lb.id
-  type             = "label_selector"
-  label_selector   = "cluster=${var.cluster_name},node-type=control-plane"
+  is_dedi_server           = true
+  name                     = each.value.name
+  ipv4_address             = each.value.ipv4_address
+  kubernetes_version       = var.kubernetes_version
+  kubernetes_major_version = local.version_major
+  ssh_private_key          = var.ssh_private_key
 }
 
 /*
@@ -65,20 +52,22 @@ resource "hcloud_load_balancer_target" "cloud_cp" {
 
 resource "null_resource" "first_cp_node" {
   depends_on = [
-    // we have to wait until all cloud control planes
-    // are ready. dedi control plane servers will 
-    // already be ready for provisioning.
-    null_resource.install_packages,
-    hcloud_load_balancer.cp_lb
+    null_resource.provision_lb
   ]
   connection {
     user        = "root"
     private_key = var.ssh_private_key
-    host        = local.first_cp_node.ipv4_address
+    host        = local.first_cp_node.tailscale_ipv4_address
   }
   provisioner "file" {
-    content     = local.cluster_config
-    destination = "/root/cluster_config.yaml"
+    content = templatefile("${path.module}/templates/kubeadm_init_config.tftpl", {
+      node_ip                  = local.first_cp_node.tailscale_ipv4_address,
+      cert_key                 = local.cert_key,
+      cluster_name             = var.cluster_name,
+      kubernetes_minor_version = local.version_minor,
+      cp_endpoint              = "${local.lb_tailscale_ipv4_address}:6443",
+    })
+    destination = "/root/kubeadm_config.yaml"
   }
   provisioner "file" {
     source      = "modules/cluster/scripts/init-cp-node.sh"
@@ -97,17 +86,24 @@ resource "null_resource" "other_cp_nodes" {
   connection {
     user        = "root"
     private_key = var.ssh_private_key
-    host        = each.value.ipv4_address
+    host        = each.value.tailscale_ipv4_address
   }
   provisioner "file" {
-    source      = "modules/cluster/scripts/join-node.sh"
+    source      = "${path.module}/scripts/join-node.sh"
     destination = "/root/join-node.sh"
+  }
+  provisioner "file" {
+    content = templatefile("${path.module}/templates/kubeadm_cp_config.tftpl", {
+      node_ip         = each.value.tailscale_ipv4_address,
+      cert_key        = local.cert_key,
+      cp_endpoint     = "${local.lb_tailscale_ipv4_address}:6443",
+      bootstrap_token = data.external.bootstrap_token.result.cmd
+    })
+    destination = "/root/kubeadm_config.yaml"
   }
   provisioner "remote-exec" {
     inline = [
-      "export JOIN_CMD='${data.external.join_cmd.result.cmd}'",
-      "export CERT_KEY=${random_bytes.certkey.hex}",
-      "export IS_CP=true",
+      "export CERT_KEY=${local.cert_key}",
       "chmod +x /root/join-node.sh",
       "/root/join-node.sh"
     ]

@@ -18,20 +18,26 @@ module "cloud_worker" {
   source   = "../host"
   for_each = local.cloud_worker_map
 
-  is_hcloud_server   = true
-  name               = each.value.name
-  hcloud_server_type = each.value.server_type
-  hcloud_location    = each.value.location
-  hcloud_ssh_keys    = each.value.initial_ssh_keys
+  is_hcloud_server         = true
+  name                     = each.value.name
+  hcloud_server_type       = each.value.server_type
+  hcloud_location          = each.value.location
+  hcloud_ssh_keys          = each.value.initial_ssh_keys
+  kubernetes_version       = var.kubernetes_version
+  kubernetes_major_version = local.version_major
+  ssh_private_key          = var.ssh_private_key
 }
 
 module "dedi_worker" {
   source   = "../host"
   for_each = local.dedi_worker_map
 
-  is_dedi_server = true
-  name           = each.value.name
-  ipv4_address   = each.value.ipv4_address
+  is_dedi_server           = true
+  name                     = each.value.name
+  ipv4_address             = each.value.ipv4_address
+  kubernetes_version       = var.kubernetes_version
+  kubernetes_major_version = local.version_major
+  ssh_private_key          = var.ssh_private_key
 }
 
 /*
@@ -46,16 +52,24 @@ resource "null_resource" "join_workers" {
   connection {
     user        = "root"
     private_key = var.ssh_private_key
-    host        = each.value.ipv4_address
+    host        = each.value.tailscale_ipv4_address
   }
   provisioner "file" {
-    source      = "modules/cluster/scripts/join-node.sh"
+    source      = "${path.module}/scripts/join-node.sh"
     destination = "/root/join-node.sh"
+  }
+  provisioner "file" {
+    content = templatefile("${path.module}/templates/kubeadm_worker_config.tftpl", {
+      node_ip         = each.value.tailscale_ipv4_address,
+      cert_key        = local.cert_key,
+      cp_endpoint     = "${local.lb_tailscale_ipv4_address}:6443",
+      bootstrap_token = data.external.bootstrap_token.result.cmd
+    })
+    destination = "/root/kubeadm_config.yaml"
   }
   provisioner "remote-exec" {
     inline = [
-      "export JOIN_CMD='${data.external.join_cmd.result.cmd}'",
-      "export CERT_KEY=${random_bytes.certkey.hex}",
+      "export CERT_KEY=${local.cert_key}",
       "chmod +x /root/join-node.sh",
       "/root/join-node.sh"
     ]
