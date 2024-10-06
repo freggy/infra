@@ -22,6 +22,9 @@ systemctl start crio.service
 sysctl -w net.ipv4.ip_forward=1
 sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf # persist after reboot
 
-# this indicates that if the node is a control plane 
+curl -fsSL https://tailscale.com/install.sh | sh
+tailscale up --auth-key=$TAILSCALE_AUTH_KEY
+
+# this indicates that if the node is a control plane
 # it has not been initialized
 echo '0' > /root/.joined

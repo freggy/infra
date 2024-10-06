@@ -16,12 +16,16 @@ variable "cilium_version" {
 
 variable "load_balancer" {
   type = object({
-    location = string
-    type     = string
+    location         = string
+    server_type      = string
+    image            = string
+    initial_ssh_keys = list(string)
   })
   default = {
-    location = "fsn1"
-    type     = "lb11"
+    location         = "fsn1"
+    server_type      = "cax11"
+    image            = "ubuntu-24.04"
+    initial_ssh_keys = []
   }
 }
 

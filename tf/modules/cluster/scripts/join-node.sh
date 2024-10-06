@@ -4,15 +4,6 @@ if [ $(cat /root/.joined) -eq 1 ]; then
     exit 0
 fi
 
-if [ -z $IS_CP ]; then
-    $JOIN_CMD \
-        --ignore-preflight-errors=FileContent--proc-sys-net-bridge-bridge-nf-call-iptables \
-        --certificate-key $CERT_KEY
-else
-    $JOIN_CMD \
-        --ignore-preflight-errors=FileContent--proc-sys-net-bridge-bridge-nf-call-iptables \
-        --certificate-key $CERT_KEY \
-        --control-plane
-fi
+kubeadm join --config /root/kubeadm_config.yaml
 
 echo '1' > /root/.joined

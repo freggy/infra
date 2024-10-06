@@ -1,0 +1,5 @@
+listen control_plane
+    bind :6443 interface tailscale0
+    %{for node in cp_nodes}
+    server ${node.name} ${node.tailscale_ipv4_address}:6443
+    %{endfor}
