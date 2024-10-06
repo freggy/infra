@@ -17,7 +17,7 @@ locals {
 
   cert_key = nonsensitive(random_bytes.certkey.hex)
 
-  lb_tailscale_ipv4_address = sort(data.tailscale_device.lb.addresses)[0]
+  lb_tailscale_ipv4_address = module.lb_tailscale_device.tailscale_ipv4_address
 }
 
 data "external" "bootstrap_token" {
@@ -39,10 +39,6 @@ terraform {
     hcloud = {
       source  = "hetznercloud/hcloud"
       version = ">= 1.43.0"
-    }
-    tailscale = {
-      source  = "tailscale/tailscale"
-      version = ">= 0.17.1"
     }
   }
 }

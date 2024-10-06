@@ -9,23 +9,6 @@ resource "hcloud_server" "cp_lb" {
   }
 }
 
-resource "tailscale_tailnet_key" "lb_auth_key" {
-  depends_on = [
-    hcloud_server.cp_lb
-  ]
-  preauthorized = true
-  expiry        = 3600
-  description   = "${var.cluster_name}-lb"
-}
-
-data "tailscale_device" "lb" {
-  depends_on = [
-    null_resource.provision_lb
-  ]
-  hostname = "${var.cluster_name}-lb"
-  wait_for = "60s"
-}
-
 resource "null_resource" "provision_lb" {
   depends_on = [
     hcloud_server.cp_lb
@@ -41,7 +24,6 @@ resource "null_resource" "provision_lb" {
   }
   provisioner "remote-exec" {
     inline = [
-      "export TAILSCALE_AUTH_KEY=${nonsensitive(tailscale_tailnet_key.lb_auth_key.key)}",
       "chmod +x /root/provision-lb.sh",
       "/root/provision-lb.sh",
     ]
@@ -57,4 +39,14 @@ resource "null_resource" "provision_lb" {
       "systemctl restart haproxy",
     ]
   }
+}
+
+module "lb_tailscale_device" {
+  source = "../tailscale_device"
+  depends_on = [
+    hcloud_server.cp_lb
+  ]
+  hostname        = "${var.cluster_name}-lb"
+  ssh_private_key = var.ssh_private_key
+  address         = hcloud_server.cp_lb.ipv4_address
 }

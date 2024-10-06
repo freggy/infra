@@ -52,7 +52,7 @@ resource "null_resource" "join_workers" {
   connection {
     user        = "root"
     private_key = var.ssh_private_key
-    host        = each.value.ipv4_address
+    host        = each.value.tailscale_ipv4_address
   }
   provisioner "file" {
     source      = "${path.module}/scripts/join-node.sh"

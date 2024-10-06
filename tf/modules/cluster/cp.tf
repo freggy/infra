@@ -57,7 +57,7 @@ resource "null_resource" "first_cp_node" {
   connection {
     user        = "root"
     private_key = var.ssh_private_key
-    host        = local.first_cp_node.ipv4_address
+    host        = local.first_cp_node.tailscale_ipv4_address
   }
   provisioner "file" {
     content = templatefile("${path.module}/templates/kubeadm_init_config.tftpl", {
@@ -86,7 +86,7 @@ resource "null_resource" "other_cp_nodes" {
   connection {
     user        = "root"
     private_key = var.ssh_private_key
-    host        = each.value.ipv4_address
+    host        = each.value.tailscale_ipv4_address
   }
   provisioner "file" {
     source      = "${path.module}/scripts/join-node.sh"

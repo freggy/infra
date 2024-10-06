@@ -8,12 +8,11 @@ output "ipv4_address" {
 }
 
 output "tailscale_auth_key" {
-  value     = tailscale_tailnet_key.auth_key.key
-  sensitive = false
+  value = module.tailscale_device.tailscale_auth_key
 }
 
 output "tailscale_ipv4_address" {
-  value = sort(data.tailscale_device.device.addresses)[0]
+  value = module.tailscale_device.tailscale_ipv4_address
 }
 
 output "name" {
