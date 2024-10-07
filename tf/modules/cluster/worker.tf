@@ -66,7 +66,7 @@ resource "null_resource" "join_workers" {
     content = templatefile("${path.module}/templates/kubeadm_worker_config.tftpl", {
       node_ip         = each.value.tailscale_ipv4_address,
       cert_key        = local.cert_key,
-      cp_endpoint     = "${local.lb_tailscale_ipv4_address}:6443",
+      cp_endpoint     = "${module.lb_tailscale_device.tailscale_ipv4_address}:6443",
       bootstrap_token = data.external.bootstrap_token.result.cmd
     })
     destination = "/root/kubeadm_config.yaml"

@@ -69,7 +69,7 @@ resource "null_resource" "first_cp_node" {
       cert_key                 = local.cert_key,
       cluster_name             = var.cluster_name,
       kubernetes_minor_version = local.version_minor,
-      cp_endpoint              = "${local.lb_tailscale_ipv4_address}:6443",
+      cp_endpoint              = "${module.lb_tailscale_device.tailscale_ipv4_address}:6443",
     })
     destination = "/root/kubeadm_config.yaml"
   }
@@ -100,7 +100,7 @@ resource "null_resource" "other_cp_nodes" {
     content = templatefile("${path.module}/templates/kubeadm_cp_config.tftpl", {
       node_ip         = each.value.tailscale_ipv4_address,
       cert_key        = local.cert_key,
-      cp_endpoint     = "${local.lb_tailscale_ipv4_address}:6443",
+      cp_endpoint     = "${module.lb_tailscale_device.tailscale_ipv4_address}:6443",
       bootstrap_token = data.external.bootstrap_token.result.cmd
     })
     destination = "/root/kubeadm_config.yaml"

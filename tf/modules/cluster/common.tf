@@ -16,8 +16,6 @@ locals {
   version_minor = split("-", join(".", slice(local.version_array, 0, 3)))[0]
 
   cert_key = nonsensitive(random_bytes.certkey.hex)
-
-  lb_tailscale_ipv4_address = module.lb_tailscale_device.tailscale_ipv4_address
 }
 
 data "external" "bootstrap_token" {
