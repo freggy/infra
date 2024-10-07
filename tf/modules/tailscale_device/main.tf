@@ -28,6 +28,7 @@ resource "null_resource" "install" {
   provisioner "remote-exec" {
     inline = [
       "export TAILSCALE_AUTH_KEY=${nonsensitive(tailscale_tailnet_key.auth_key.key)}",
+      "export HOSTNAME=${var.hostname}",
       "chmod +x /root/install-tailscale.sh",
       "/root/install-tailscale.sh",
     ]

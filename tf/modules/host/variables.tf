@@ -14,6 +14,14 @@ variable "ssh_private_key" {
   type = string
 }
 
+variable "cloudflare_zone_id" {
+  type = string
+}
+
+variable "environment" {
+  type = string
+}
+
 /*
  * dedicated server properties
  */

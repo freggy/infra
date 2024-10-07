@@ -29,13 +29,31 @@ resource "null_resource" "provision" {
 }
 
 module "tailscale_device" {
+  // only enable for cloud servers, because dedicated ones have to have
+  // tailscale configured beforehand. This is, so we can specify the dedicated
+  // servers internal IP directly in the cluster config. Otherwise, we would
+  // need to configure the public IP first and after cluster deployment change
+  // it to the internal one.
+  count  = var.is_hcloud_server ? 1 : 0
   source = "../tailscale_device"
   depends_on = [
     null_resource.provision
   ]
-  hostname        = var.name
+  hostname        = "${var.name}-${var.environment}"
   ssh_private_key = var.ssh_private_key
   address         = try(hcloud_server.server[0].ipv4_address, var.ipv4_address)
+}
+
+resource "cloudflare_dns_record" "a_record" {
+  depends_on = [
+    module.tailscale_device
+  ]
+  zone_id = var.cloudflare_zone_id
+  name    = "${var.name}.${var.environment}"
+  // in the case of a dedicated server var.ipv4_address is the internal IP
+  content = try(module.tailscale_device[0].tailscale_ipv4_address, var.ipv4_address)
+  type    = "A"
+  ttl     = 3600
 }
 
 terraform {
@@ -43,6 +61,10 @@ terraform {
     hcloud = {
       source  = "hetznercloud/hcloud"
       version = ">= 1.43.0"
+    }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "5.0.0-alpha1"
     }
   }
 }

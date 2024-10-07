@@ -20,7 +20,7 @@ module "cloud_cp" {
   for_each = local.cloud_cp_map
 
   is_hcloud_server         = true
-  name                     = each.value.name
+  name                     = "${each.value.name}-${var.cluster_name}"
   hcloud_server_type       = each.value.server_type
   hcloud_location          = each.value.location
   hcloud_image             = each.value.image
@@ -32,6 +32,8 @@ module "cloud_cp" {
     cluster   = var.cluster_name
     node-type = "control-plane"
   }
+  cloudflare_zone_id = var.cloudflare_zone_id
+  environment        = var.environment
 }
 
 module "dedi_cp" {
@@ -39,11 +41,13 @@ module "dedi_cp" {
   for_each = local.dedi_cp_map
 
   is_dedi_server           = true
-  name                     = each.value.name
+  name                     = "${each.value.name}-${var.cluster_name}"
   ipv4_address             = each.value.ipv4_address
   kubernetes_version       = var.kubernetes_version
   kubernetes_major_version = local.version_major
   ssh_private_key          = var.ssh_private_key
+  cloudflare_zone_id       = var.cloudflare_zone_id
+  environment              = var.environment
 }
 
 /*
@@ -65,7 +69,7 @@ resource "null_resource" "first_cp_node" {
       cert_key                 = local.cert_key,
       cluster_name             = var.cluster_name,
       kubernetes_minor_version = local.version_minor,
-      cp_endpoint              = "${local.lb_tailscale_ipv4_address}:6443",
+      cp_endpoint              = "${module.lb_tailscale_device.tailscale_ipv4_address}:6443",
     })
     destination = "/root/kubeadm_config.yaml"
   }
@@ -96,7 +100,7 @@ resource "null_resource" "other_cp_nodes" {
     content = templatefile("${path.module}/templates/kubeadm_cp_config.tftpl", {
       node_ip         = each.value.tailscale_ipv4_address,
       cert_key        = local.cert_key,
-      cp_endpoint     = "${local.lb_tailscale_ipv4_address}:6443",
+      cp_endpoint     = "${module.lb_tailscale_device.tailscale_ipv4_address}:6443",
       bootstrap_token = data.external.bootstrap_token.result.cmd
     })
     destination = "/root/kubeadm_config.yaml"

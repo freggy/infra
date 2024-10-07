@@ -1,14 +1,22 @@
+data "cloudflare_zone" "main" {
+  filter = {
+    name = "76k.io"
+  }
+}
+
 module "app1_euc" {
   source = "./modules/cluster"
   providers = {
     hcloud = hcloud
   }
-  kubernetes_version = "1.30.0-1.1"
   cluster_name       = "app1-euc"
-  ssh_private_key    = file("~/.ssh/id_ed25519")
+  environment        = "prod"
+  cloudflare_zone_id = data.cloudflare_zone.main.id
   cilium_version     = "1.16.2"
+  kubernetes_version = "1.30.0-1.1"
+  ssh_private_key    = file("~/.ssh/id_ed25519")
   load_balancer = {
-    name             = "app1-euc-cp1"
+    name             = "cp1"
     server_type      = "cax11"
     image            = "ubuntu-24.04"
     location         = "hel1"
@@ -16,14 +24,14 @@ module "app1_euc" {
   }
   cloud_cp_nodes = [
     {
-      name             = "app1-euc-cp1"
+      name             = "cp1"
       server_type      = "cax11"
       image            = "ubuntu-24.04"
       location         = "hel1"
       initial_ssh_keys = ["yannic-mac-work"]
     },
     {
-      name             = "app1-euc-cp2"
+      name             = "cp2"
       server_type      = "cax11"
       image            = "ubuntu-24.04"
       location         = "hel1"
@@ -32,7 +40,7 @@ module "app1_euc" {
   ]
   cloud_worker_nodes = [
     {
-      name             = "app1-euc-w1"
+      name             = "w1"
       server_type      = "cax21"
       image            = "ubuntu-24.04"
       location         = "hel1"

@@ -10,6 +10,14 @@ variable "cluster_name" {
   type = string
 }
 
+variable "environment" {
+  type = string
+}
+
+variable "cloudflare_zone_id" {
+  type = string
+}
+
 variable "cilium_version" {
   type = string
 }

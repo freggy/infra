@@ -11,5 +11,4 @@ KUBECONFIG=/etc/kubernetes/admin.conf cilium install \
     --set k8sServicePort=6443 \
     --set kubeProxyReplacement=true \
     --wait \
-    --wait-duration 30s \
-
+    --wait-duration 5m \

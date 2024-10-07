@@ -5,7 +5,7 @@ resource "null_resource" "install_cilium" {
   connection {
     user        = "root"
     private_key = var.ssh_private_key
-    host        = local.first_cp_node.ipv4_address
+    host        = local.first_cp_node.tailscale_ipv4_address
   }
   provisioner "file" {
     source      = "${path.module}/scripts/install-cilium.sh"
@@ -14,7 +14,7 @@ resource "null_resource" "install_cilium" {
   provisioner "remote-exec" {
     inline = [
       "export CILIUM_VERSION=${var.cilium_version}",
-      "export CP_LB_IP=${local.lb_tailscale_ipv4_address}",
+      "export CP_LB_IP=${module.lb_tailscale_device.tailscale_ipv4_address}",
       "chmod +x /root/install-cilium.sh",
       "/root/install-cilium.sh"
     ]
