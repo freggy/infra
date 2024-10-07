@@ -61,8 +61,35 @@ resource "cloudflare_dns_record" "lb_a_record" {
   ]
   zone_id = var.cloudflare_zone_id
   name    = "${local.lb_hostname}.${var.environment}"
-  // in the case of a dedicated server var.ipv4_address is the internal IP
-  content = local.lb_tailscale_ipv4_address
+  content = module.lb_tailscale_device.tailscale_ipv4_address
   type    = "A"
   ttl     = 3600
+}
+
+resource "null_resource" "update_lb_config" {
+  connection {
+    user        = "root"
+    private_key = var.ssh_private_key
+    host        = module.lb_tailscale_device.tailscale_ipv4_address
+  }
+  triggers = {
+    sha1 = "${sha1(file("${path.module}/templates/haproxy.cfg.tftpl"))}"
+  }
+  provisioner "file" {
+    content = templatefile("${path.module}/templates/haproxy.cfg.tftpl", {
+      cp_nodes = local.cp
+    })
+    destination = "/etc/haproxy/haproxy.cfg.new"
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "haproxy -f /etc/haproxy/haproxy.cfg.new -c" // check if config is valid
+    ]
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "mv /etc/haproxy/haproxy.cfg.new /etc/haproxy/haproxy.cfg",
+      "systemctl restart haproxy",
+    ]
+  }
 }
