@@ -5,7 +5,7 @@ resource "null_resource" "install_cilium" {
   connection {
     user        = "root"
     private_key = var.ssh_private_key
-    host        = local.first_cp_node.ipv4_address
+    host        = local.first_cp_node.tailscale_ipv4_address
   }
   provisioner "file" {
     source      = "${path.module}/scripts/install-cilium.sh"
