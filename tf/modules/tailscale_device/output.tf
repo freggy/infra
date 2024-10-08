@@ -1,5 +1,6 @@
 output "tailscale_auth_key" {
-  value = tailscale_tailnet_key.auth_key.key
+  value     = tailscale_tailnet_key.auth_key.key
+  sensitive = true
 }
 
 output "tailscale_ipv4_address" {

@@ -35,6 +35,10 @@ resource "null_resource" "install" {
   }
 }
 
+// there is a known bug that tailscaled tells services is ready
+// even though the IP has not been bound to the interface yet,
+// so wait unitl its ready.
+// see https://github.com/tailscale/tailscale/issues/11504#issuecomment-2113331262
 resource "null_resource" "configure_sshd" {
   depends_on = [
     data.tailscale_device.device
@@ -45,18 +49,29 @@ resource "null_resource" "configure_sshd" {
     host        = var.address
   }
   provisioner "file" {
-    content = templatefile("${path.module}/templates/tailscale_sshd.conf", {
+    content = templatefile("${path.module}/files/tailscale_sshd.conf.tftpl", {
       ip = sort(data.tailscale_device.device.addresses)[0]
     })
     destination = "/etc/ssh/sshd_config.d/tailscale_sshd.conf"
   }
+  provisioner "file" {
+    source      = "${path.module}/scripts/wait-for-ip.sh"
+    destination = "/root/wait-for-ip.sh"
+  }
   provisioner "remote-exec" {
     inline = [
-      // somehow we need to wait a bit before
-      // restarting sshd, otherwise our changes
-      // are not getting picked up.
-      "sleep 1",
-      "systemctl restart ssh"
+      "mkdir -p /etc/systemd/system/tailscaled.service.d"
+    ]
+  }
+  provisioner "file" {
+    source      = "${path.module}/files/override.conf"
+    destination = "/etc/systemd/system/tailscaled.service.d/override.conf"
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /root/wait-for-ip.sh",
+      "systemctl daemon-reload",
+      "reboot",
     ]
   }
 }
